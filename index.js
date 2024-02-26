@@ -16,13 +16,13 @@ const io = socketIO(server, {
     credentials: true,
   },
 });
-// const io = socketIO(server);
+
 io.on("connection", (socket) => {
   console.log("a user connected :D", socket.id);
 
-  socket.on("send_message", (data, callback) => {
-    console.log("socket message", data);
-    callback(data);
+  socket.on("secret_id", (name) => {
+    console.log(name);
+    socket.broadcast.emit(name, { name, secr_id: socket.id });
   });
   socket.on("disconnect", () => {
     socket.disconnect();
@@ -32,9 +32,12 @@ io.on("connection", (socket) => {
     console.log("socket error");
   });
 });
-app.get("/", (req, res) => {
-  res.send("Welcome to my server!");
-});
+
+// socket.on("send_message", (data, callback) => {
+//   console.log("socket message", data);
+//   callback(data);
+// });
+
 instrument(io, {
   auth: true,
   mode: "development",
