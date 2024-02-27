@@ -24,6 +24,15 @@ io.on("connection", (socket) => {
     console.log(name);
     socket.broadcast.emit(name, { name, secr_id: socket.id });
   });
+
+  socket.on("privateRequest", (data, callback) => {
+    // Send the message to the specified socket ID
+    console.log(data.id, data.message);
+    io.to(data.id).timeout(5000).emit("privateRequestCatch", {
+      fromSocketId: data.id,
+      message: data.message,
+    });
+  });
   socket.on("disconnect", () => {
     socket.disconnect();
     console.log("🔥: A user disconnected");
