@@ -25,10 +25,35 @@ io.on("connection", (socket) => {
     socket.broadcast.emit(name, { name, secr_id: socket.id });
   });
 
+  socket.on("joinroom", (room, cb) => {
+    console.log("room", room, socket.id);
+    socket.join(room);
+    socket.to(room).emit("user joined", socket.id);
+  });
+  socket.on("leaveroom", (room, cb) => {
+    console.log(room, socket.id);
+    socket.leave(room);
+    socket.to(room).emit("user left", socket.id);
+  });
+  socket.on("leaveAll", (room) => {
+    io.of("/")
+      .in(room)
+      .clients((error, socketIds) => {
+        if (error) throw error;
+
+        socketIds.forEach((socketId) => {
+          io.sockets.sockets[socketId].leave(room);
+          console.log(`User ${socketId} left room: ${room}`);
+        });
+
+        io.to(room).emit("allUsersLeft");
+      });
+  });
   socket.on("privateRequest", (data, callback) => {
     // Send the message to the specified socket ID
-    console.log(data.id, data.message);
-    io.to(data.id).timeout(5000).emit("privateRequestCatch", {
+    console.log(data.id, data.message, data.room);
+    socket.join(data.room);
+    io.to(data.id).emit("privateRequestCatch", {
       fromSocketId: data.id,
       message: data.message,
     });
