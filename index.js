@@ -28,26 +28,16 @@ io.on("connection", (socket) => {
   socket.on("joinroom", (room, cb) => {
     console.log("room", room, socket.id);
     socket.join(room);
-    socket.to(room).emit("user joined", socket.id);
+    io.to(room).emit("userjoined", socket.id);
   });
   socket.on("leaveroom", (room, cb) => {
     console.log(room, socket.id);
     socket.leave(room);
-    socket.to(room).emit("user left", socket.id);
+    socket.to(room).emit("user_left", socket.id);
   });
   socket.on("leaveAll", (room) => {
-    io.of("/")
-      .in(room)
-      .clients((error, socketIds) => {
-        if (error) throw error;
-
-        socketIds.forEach((socketId) => {
-          io.sockets.sockets[socketId].leave(room);
-          console.log(`User ${socketId} left room: ${room}`);
-        });
-
-        io.to(room).emit("allUsersLeft");
-      });
+    console.log("all users leave ", room);
+    io.in(room).socketsLeave(room);
   });
   socket.on("privateRequest", (data, callback) => {
     // Send the message to the specified socket ID
