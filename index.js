@@ -20,15 +20,16 @@ const io = socketIO(server, {
 io.on("connection", (socket) => {
   console.log("a user connected :D", socket.id);
 
-  socket.on("secret_id", (name) => {
-    console.log(name);
-    socket.broadcast.emit(name, { name, secr_id: socket.id });
+  socket.on("secret_id", (id) => {
+    console.log(id, "secretid");
+    socket.broadcast.emit(id, { id, secr_id: socket.id });
   });
 
   socket.on("joinroom", (room, cb) => {
     console.log("room", room, socket.id);
+    let data = { room, socketid: socket.id };
     socket.join(room);
-    io.to(room).emit("userjoined", socket.id);
+    io.to(room).emit("userjoined", data);
   });
   socket.on("leaveroom", (room, cb) => {
     console.log(room, socket.id);
@@ -43,10 +44,7 @@ io.on("connection", (socket) => {
     // Send the message to the specified socket ID
     console.log(data.id, data.message, data.room);
     socket.join(data.room);
-    io.to(data.id).emit("privateRequestCatch", {
-      fromSocketId: data.id,
-      message: data.message,
-    });
+    io.to(data.id).emit("privateRequestCatch", data);
   });
   socket.on("disconnect", () => {
     socket.disconnect();
