@@ -48,7 +48,7 @@ io.on("connection", (socket) => {
   });
   socket.on("disconnect", () => {
     socket.disconnect();
-    console.log("🔥: A user disconnected");
+    console.log("🔥: A user disconnected", socket.adapter.rooms);
   });
   socket.on("error", (data) => {
     console.log("socket error");
