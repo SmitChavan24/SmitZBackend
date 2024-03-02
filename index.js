@@ -21,18 +21,18 @@ io.on("connection", (socket) => {
   console.log("a user connected :D", socket.id);
 
   socket.on("secret_id", (id) => {
-    console.log(id, "secretid");
+    console.log("secret_id", id);
     socket.broadcast.emit(id, { id, secr_id: socket.id });
   });
 
   socket.on("joinroom", (room, cb) => {
-    console.log("room", room, socket.id);
+    console.log("joinroom", room, socket.id);
     let data = { room, socketid: socket.id };
     socket.join(room);
     io.to(room).emit("userjoined", data);
   });
   socket.on("leaveroom", (room, cb) => {
-    console.log(room, socket.id);
+    console.log("leaveroom", room, socket.id);
     socket.leave(room);
     socket.to(room).emit("user_left", socket.id);
   });
@@ -41,14 +41,18 @@ io.on("connection", (socket) => {
     io.in(room).socketsLeave(room);
   });
   socket.on("privateRequest", (data, callback) => {
-    // Send the message to the specified socket ID
-    console.log(data.id, data.message, data.room);
+    console.log("privateRequest", data.id, data.message, data.room);
     socket.join(data.room);
     io.to(data.id).emit("privateRequestCatch", data);
   });
+  socket.on("userReject", (data, callback) => {
+    console.log("user rejected request", data);
+    socket.broadcast.emit("userReject", data);
+  });
   socket.on("disconnect", () => {
+    socket.broadcast.emit("userLeft", { secr_id: socket.id });
     socket.disconnect();
-    console.log("🔥: A user disconnected", socket.adapter.rooms);
+    // console.log("🔥: A user disconnected", socket.adapter.rooms);
   });
   socket.on("error", (data) => {
     console.log("socket error");
