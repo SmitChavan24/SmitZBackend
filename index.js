@@ -24,7 +24,11 @@ io.on("connection", (socket) => {
     console.log("secret_id", id);
     socket.broadcast.emit(id, { id, secr_id: socket.id });
   });
-
+  socket.on("sendmessageinroom", (message, cb) => {
+    console.log("sendmessageinroom", message);
+    message.socketid = socket.id;
+    io.to(message.room).emit("userjoined", message);
+  });
   socket.on("joinroom", (room, cb) => {
     console.log("joinroom", room, socket.id);
     let data = { room, socketid: socket.id };
