@@ -45,6 +45,15 @@ io.on("connection", (socket) => {
       io.to(socket).emit("setCurrentPlayer", { currentPlayerData });
     }
   });
+
+  socket.on("setSecondCurrentPlayer", (data) => {
+    if (data[1].socketid) {
+      let socket = data[1].socketid;
+      let currentPlayerData = { ...data[1], modal: false };
+      io.to(socket).emit("setSecondCurrentPlayer", { currentPlayerData });
+    }
+  });
+
   socket.on("joinroom", async (room, cb) => {
     console.log("joinroom", room, socket.id);
     const roomUsers = await io.in(room).allSockets();
