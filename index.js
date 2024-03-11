@@ -29,10 +29,21 @@ io.on("connection", (socket) => {
     console.log("secret_id", id);
     socket.broadcast.emit(id, { id, secr_id: socket.id });
   });
+  socket.on("getSocketID", (data, callback) => {
+    console.log("socket message", data);
 
+    callback(socket.id);
+  });
   socket.on("sendmessageinroom", (message, cb) => {
     message.socketid = socket.id;
+
     io.to(message.room).emit("userjoined", message);
+  });
+
+  socket.on("sendChoiceSps", (message, cb) => {
+    message.socketid = socket.id;
+
+    io.to(message.room).emit("sendChoiceSps", message);
   });
 
   socket.on("sendmove", (data) => {
