@@ -10,10 +10,15 @@ const port = 4000;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
+
 const io = socketIO(server, {
   cors: {
     origin: ["https://admin.socket.io"],
     credentials: true,
+  },
+  connectionStateRecovery: {
+    maxDisconnectionDuration: 1 * 60 * 1000,
+    skipMiddlewares: true,
   },
 });
 
@@ -24,16 +29,14 @@ io.on("connection", (socket) => {
     console.log("secret_id", id);
     socket.broadcast.emit(id, { id, secr_id: socket.id });
   });
+
   socket.on("sendmessageinroom", (message, cb) => {
-    // console.log("sendmessageinroom", message);
     message.socketid = socket.id;
     io.to(message.room).emit("userjoined", message);
   });
 
   socket.on("sendmove", (data) => {
     console.log(data.players.socketid);
-    // console.log(data.state);
-    // console.log("sendmessageinroom", message);
     let socket = data.players.socketid;
     io.to(socket).emit("sendmove", data);
   });
@@ -63,29 +66,35 @@ io.on("connection", (socket) => {
       io.to(room).emit("userjoined", data);
     }
   });
+
   socket.on("leaveroom", (room, cb) => {
     console.log("leaveroom", room, socket.id);
     socket.leave(room);
     socket.to(room).emit("user_left", socket.id);
   });
+
   socket.on("leaveAll", (room) => {
     console.log("all users leave ", room);
     io.in(room).socketsLeave(room);
   });
+
   socket.on("privateRequest", (data, callback) => {
     console.log("privateRequest", data.id, data.message, data.room);
     socket.join(data.room);
     io.to(data.id).emit("privateRequestCatch", data);
   });
+
   socket.on("userReject", (data, callback) => {
     console.log("user rejected request", data);
     socket.broadcast.emit("userReject", data);
   });
+
   socket.on("disconnect", () => {
     socket.broadcast.emit("userLeft", { secr_id: socket.id });
     socket.disconnect();
     // console.log("🔥: A user disconnected", socket.adapter.rooms);
   });
+
   socket.on("error", (data) => {
     console.log("socket error");
   });
@@ -102,22 +111,10 @@ instrument(io, {
   auth: {
     type: "basic",
     username: "smit",
-    password: bycrypt.hashSync("2311", 10), // "changeit" encrypted with bcrypt
+    password: bycrypt.hashSync("2311", 10),
   },
 });
 
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
-
-// const express = require("express");
-// const app = express();
-// const server = require("http").createServer(app);
-// const io = require("socket.io")(server);
-// const port = 4000;
-
-// io.on("connection", (socket) => {
-//   console.log("a user connected successfully", socket.id);
-// });
-
-// server.listen(port, () => console.log(`${port} is actively running`));
