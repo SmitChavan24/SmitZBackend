@@ -42,8 +42,14 @@ io.on("connection", (socket) => {
 
   socket.on("sendChoiceSps", (message, cb) => {
     message.socketid = socket.id;
+    let updatedGameData = message.data.map((item) => {
+      if (item.socketid == socket.id) {
+        return { ...item, move: message.move };
+      }
+      return item;
+    });
 
-    io.to(message.room).emit("sendChoiceSps", message);
+    io.to(message.room).emit("sendChoiceSps", updatedGameData);
   });
 
   socket.on("sendmove", (data) => {
