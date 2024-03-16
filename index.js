@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 const app = express();
@@ -5,7 +7,7 @@ const server = require("http").createServer(app);
 const socketIO = require("socket.io");
 const { instrument } = require("@socket.io/admin-ui");
 const bycrypt = require("bcryptjs");
-const port = 4000;
+const port = process.env.PORT || 4000;
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -58,6 +60,9 @@ io.on("connection", (socket) => {
     io.to(socket).emit("sendmove", data);
   });
 
+  socket.on("setWinner", (data) => {
+    io.to(data.room).emit("setWinner", data);
+  });
   socket.on("setCurrentPlayer", (data) => {
     if (data[0].socketid) {
       let socket = data[0].socketid;
