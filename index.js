@@ -80,12 +80,13 @@ io.on("connection", (socket) => {
   });
 
   socket.on("joinroom", async (room, cb) => {
-    console.log("joinroom", room, socket.id);
-    const roomUsers = await io.in(room).allSockets();
+    console.log("joinroom", room.room, socket.id);
+    const Room = room.room;
+    const roomUsers = await io.in(Room).allSockets();
     if (roomUsers.size < 2) {
-      let data = { room, socketid: socket.id };
-      socket.join(room);
-      io.to(room).emit("userjoined", data);
+      let data = { Room, socketid: socket.id, room };
+      socket.join(Room);
+      io.to(Room).emit("userjoined", data);
     }
   });
 
@@ -102,8 +103,9 @@ io.on("connection", (socket) => {
 
   socket.on("privateRequest", (data, callback) => {
     console.log("privateRequest", data.id, data.message, data.room);
+
     socket.join(data.room);
-    io.to(data.id).emit("privateRequestCatch", data);
+    io.to(data.id).timeout(5000).emit("privateRequest", data);
   });
 
   socket.on("userReject", (data, callback) => {
@@ -111,7 +113,7 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("userReject", data);
   });
 
-  socket.on("disconnect", () => {
+  socket.on("disconnect", (data) => {
     socket.broadcast.emit("userLeft", { secr_id: socket.id });
     socket.disconnect();
     // console.log("🔥: A user disconnected", socket.adapter.rooms);
