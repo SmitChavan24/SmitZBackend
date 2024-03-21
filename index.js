@@ -101,6 +101,15 @@ io.on("connection", (socket) => {
     io.in(room).socketsLeave(room);
   });
 
+  socket.on("kick", async (id) => {
+    console.log(" user kick ", id);
+    const sockets = await io.in(id).fetchSockets();
+    for (const socket of sockets) {
+      console.log("socket id kick", socket.id);
+      socket.disconnect(true);
+    }
+  });
+
   socket.on("privateRequest", (data, callback) => {
     console.log("privateRequest", data.id, data.message, data.room);
 
