@@ -24,6 +24,18 @@ const io = socketIO(server, {
   },
 });
 
+const OnlineNameSpace = io.of("/Online");
+
+function generateRandomRoomName() {
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
+  for (let i = 0; i < 6; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return result;
+}
+
 io.on("connection", (socket) => {
   console.log("a user connected :D", socket.id);
 
@@ -132,7 +144,66 @@ io.on("connection", (socket) => {
     console.log("socket error");
   });
 });
+////////////////////////////=========================================
 
+var queue = [];
+
+var findPeerForLoneSocket = function (socket) {
+  if (queue.length > 0) {
+    var peer = queue.pop();
+    var room = socket.id + "#" + peer.id;
+    var RandomIndex = Math.floor(Math.random() * 4);
+    peer.join(room);
+    socket.join(room);
+    peer.emit("gamestart", {
+      socketid: socket.id,
+      room: room,
+      gameIndex: RandomIndex,
+    });
+    socket.emit("gamestart", {
+      socketid: peer.id,
+      room: room,
+      gameIndex: RandomIndex,
+    });
+  } else {
+    queue.push(socket);
+  }
+};
+
+OnlineNameSpace.on("connection", (socket) => {
+  // socket.join("room1");
+  // orderNamespace.to("room1").emit("hello");
+
+  socket.on("getCount", (data, callback) => {
+    const count2 = io.of("/Online").sockets.size;
+    callback(count2);
+  });
+  socket.on("getplayersinroom", (message, cb) => {
+    OnlineNameSpace.to(message.room).emit("Setplayersinroom", message);
+  });
+  socket.on("setWinnerOnline", (data) => {
+    // console.log(data);
+    OnlineNameSpace.to(data.room).emit("setWinnerOnline", data);
+  });
+  socket.on("leaveroomOnline", (room) => {
+    // console.log("all users leave ", room);
+    OnlineNameSpace.in(room.room).socketsLeave(room.room);
+  });
+
+  console.log(socket.id + " connected");
+  findPeerForLoneSocket(socket);
+
+  socket.on("disconnect", (data) => {
+    socket.broadcast.emit("userLeft", { secr_id: socket.id });
+
+    socket.disconnect();
+    // console.log("🔥: A user disconnected", socket.adapter.rooms);
+  });
+
+  socket.on("error", (data) => {
+    console.log("socket error");
+  });
+});
 // socket.on("send_message", (data, callback) => {
 //   console.log("socket message", data);
 //   callback(data);
