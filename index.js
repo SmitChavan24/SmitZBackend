@@ -189,13 +189,18 @@ OnlineNameSpace.on("connection", (socket) => {
     // console.log("all users leave ", room);
     OnlineNameSpace.in(room.room).socketsLeave(room.room);
   });
+  socket.on("disconnectroomUser", (room) => {
+    console.log("all users leave ", room);
+    queue.pop();
+    socket.disconnect(true);
+  });
 
   console.log(socket.id + " connected");
   findPeerForLoneSocket(socket);
 
   socket.on("disconnect", (data) => {
     socket.broadcast.emit("userLeft", { secr_id: socket.id });
-
+    queue.pop();
     socket.disconnect();
     // console.log("🔥: A user disconnected", socket.adapter.rooms);
   });
