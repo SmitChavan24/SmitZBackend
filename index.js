@@ -186,13 +186,10 @@ OnlineNameSpace.on("connection", (socket) => {
     OnlineNameSpace.to(message.room).emit("Setplayersinroom", message);
   });
   socket.on("setWinnerOnline", (data) => {
-    // console.log(data);
     OnlineNameSpace.to(data.room).emit("setWinnerOnline", data);
   });
   socket.on("leaveroomOnline", (room) => {
-    // console.log("all users leave ", room);
     OnlineNameSpace.in(room.room).socketsLeave(room.room);
-    // queue.pop();
     socket.disconnect(true);
   });
   socket.on("disconnectroomUser", (room) => {
@@ -218,8 +215,11 @@ OnlineNameSpace.on("connection", (socket) => {
   });
 
   socket.on("disconnect", (data) => {
+    let index = queue.indexOf(socket);
+    if (index !== -1) {
+      queue.splice(index, 1);
+    }
     socket.broadcast.emit("userLeft", { secr_id: socket.id });
-    queue.pop();
     socket.disconnect();
     // console.log("🔥: A user disconnected", socket.adapter.rooms);
   });
