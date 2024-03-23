@@ -56,6 +56,7 @@ io.on("connection", (socket) => {
 
   socket.on("sendChoiceSps", (message, cb) => {
     message.socketid = socket.id;
+    console.log(message, "senChoiceSps");
     let updatedGameData = message.data.map((item) => {
       if (item.socketid == socket.id) {
         return { ...item, move: message.move };
@@ -174,6 +175,9 @@ OnlineNameSpace.on("connection", (socket) => {
   // socket.join("room1");
   // orderNamespace.to("room1").emit("hello");
 
+  console.log(socket.id + " connected");
+  findPeerForLoneSocket(socket);
+
   socket.on("getCount", (data, callback) => {
     const count2 = io.of("/Online").sockets.size;
     callback(count2);
@@ -188,15 +192,30 @@ OnlineNameSpace.on("connection", (socket) => {
   socket.on("leaveroomOnline", (room) => {
     // console.log("all users leave ", room);
     OnlineNameSpace.in(room.room).socketsLeave(room.room);
+    // queue.pop();
+    socket.disconnect(true);
   });
   socket.on("disconnectroomUser", (room) => {
-    console.log("all users leave ", room);
     queue.pop();
     socket.disconnect(true);
   });
+  socket.on("disconnectgameUser", (room) => {
+    socket.disconnect(true);
+  });
 
-  console.log(socket.id + " connected");
-  findPeerForLoneSocket(socket);
+  socket.on("sendOnlineChoiceSps", (message, cb) => {
+    let updatedGameData = message.data.map((item) => {
+      if (item.socketid == message.socketid) {
+        return { ...item, move: message.move };
+      }
+      return item;
+    });
+
+    OnlineNameSpace.to(message.room).emit(
+      "sendOnlineChoiceSps",
+      updatedGameData
+    );
+  });
 
   socket.on("disconnect", (data) => {
     socket.broadcast.emit("userLeft", { secr_id: socket.id });
@@ -209,10 +228,6 @@ OnlineNameSpace.on("connection", (socket) => {
     console.log("socket error");
   });
 });
-// socket.on("send_message", (data, callback) => {
-//   console.log("socket message", data);
-//   callback(data);
-// });
 
 instrument(io, {
   auth: true,
