@@ -157,12 +157,10 @@ var findPeerForLoneSocket = function (socket) {
     peer.join(room);
     socket.join(room);
     peer.emit("gamestart", {
-      socketid: socket.id,
       room: room,
       gameIndex: RandomIndex,
     });
     socket.emit("gamestart", {
-      socketid: peer.id,
       room: room,
       gameIndex: RandomIndex,
     });
@@ -182,7 +180,42 @@ OnlineNameSpace.on("connection", (socket) => {
     const count2 = io.of("/Online").sockets.size;
     callback(count2);
   });
+
+  socket.on("getSocketIDOnline", (data, callback) => {
+    console.log("socket message", data);
+
+    callback(socket.id);
+  });
+
+  socket.on("setCurrentPlayerOnline", (data) => {
+    // console.log(data);
+    if (data[0].socketid) {
+      let socket = data[0].socketid;
+      let currentPlayerData = { ...data[0], modal: false };
+      OnlineNameSpace.to(socket).emit("setCurrentPlayerOnline", {
+        currentPlayerData,
+      });
+    }
+  });
+
+  socket.on("setSecondCurrentPlayerOnline", (data) => {
+    if (data[1].socketid) {
+      let socket = data[1].socketid;
+      let currentPlayerData = { ...data[1], modal: false };
+      OnlineNameSpace.to(socket).emit("setSecondCurrentPlayerOnline", {
+        currentPlayerData,
+      });
+    }
+  });
+
+  socket.on("sendmoveOnline", (data) => {
+    console.log(data.players.socketid);
+    let socket = data.players.socketid;
+    OnlineNameSpace.to(socket).emit("sendmoveOnline", data);
+  });
+
   socket.on("getplayersinroom", (message, cb) => {
+    message.socketid = socket.id;
     OnlineNameSpace.to(message.room).emit("Setplayersinroom", message);
   });
   socket.on("setWinnerOnline", (data) => {
@@ -202,7 +235,7 @@ OnlineNameSpace.on("connection", (socket) => {
 
   socket.on("sendOnlineChoiceSps", (message, cb) => {
     let updatedGameData = message.data.map((item) => {
-      if (item.socketid == message.socketid) {
+      if (item.socketid == socket.id) {
         return { ...item, move: message.move };
       }
       return item;
