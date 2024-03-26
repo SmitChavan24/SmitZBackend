@@ -112,6 +112,7 @@ io.on("connection", (socket) => {
   socket.on("leaveAll", (room) => {
     console.log("all users leave ", room);
     io.in(room).socketsLeave(room);
+    socket.disconnect(true);
   });
 
   socket.on("kick", async (id) => {
@@ -217,6 +218,9 @@ OnlineNameSpace.on("connection", (socket) => {
   socket.on("getplayersinroom", (message, cb) => {
     message.socketid = socket.id;
     OnlineNameSpace.to(message.room).emit("Setplayersinroom", message);
+  });
+  socket.on("checkAnswers", (message, cb) => {
+    OnlineNameSpace.to(message.userdata.room).emit("checkAnswers", message);
   });
   socket.on("setWinnerOnline", (data) => {
     OnlineNameSpace.to(data.room).emit("setWinnerOnline", data);
