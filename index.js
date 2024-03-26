@@ -85,8 +85,9 @@ io.on("connection", (socket) => {
   });
 
   socket.on("checkAnswersF", (message) => {
-    io.to(message.userdata.room).emit("checkAnswers", message);
+    io.to(message.userdata.room).emit("checkAnswersF", message);
   });
+
   socket.on("setSecondCurrentPlayer", (data) => {
     if (data[1].socketid) {
       let socket = data[1].socketid;
