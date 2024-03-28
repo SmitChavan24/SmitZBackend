@@ -18,23 +18,13 @@ const io = socketIO(server, {
     origin: ["https://admin.socket.io"],
     credentials: true,
   },
-  connectionStateRecovery: {
-    maxDisconnectionDuration: 1 * 60 * 1000,
-    skipMiddlewares: true,
-  },
+  // connectionStateRecovery: {
+  //   maxDisconnectionDuration: 1 * 60 * 1000,
+  //   skipMiddlewares: true,
+  // },
 });
 
 const OnlineNameSpace = io.of("/Online");
-
-function generateRandomRoomName() {
-  const characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  let result = "";
-  for (let i = 0; i < 6; i++) {
-    result += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return result;
-}
 
 io.on("connection", (socket) => {
   console.log("a user connected :D", socket.id);
