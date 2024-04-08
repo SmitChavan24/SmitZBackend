@@ -18,6 +18,8 @@ const io = socketIO(server, {
     origin: ["https://admin.socket.io"],
     credentials: true,
   },
+  pingInterval: 1500,
+  pingTimeout: 1500,
   // connectionStateRecovery: {
   //   maxDisconnectionDuration: 1 * 60 * 1000,
   //   skipMiddlewares: true,
@@ -148,6 +150,7 @@ var findPeerForLoneSocket = function (socket) {
   if (queue.length > 0) {
     var peer = queue.pop();
     var room = socket.id + "#" + peer.id;
+    console.log(room, "roomsada");
     var RandomIndex = Math.floor(Math.random() * 4);
     peer.join(room);
     socket.join(room);
@@ -225,9 +228,6 @@ OnlineNameSpace.on("connection", (socket) => {
   });
   socket.on("disconnectroomUser", (room) => {
     queue.pop();
-    socket.disconnect(true);
-  });
-  socket.on("disconnectgameUser", (room) => {
     socket.disconnect(true);
   });
 
