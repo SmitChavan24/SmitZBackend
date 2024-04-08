@@ -214,7 +214,7 @@ OnlineNameSpace.on("connection", (socket) => {
     OnlineNameSpace.to(message.room).emit("Setplayersinroom", message);
   });
   socket.on("checkAnswers", (message, cb) => {
-    OnlineNameSpace.to(message.userdata.room).emit("checkAnswers", message);
+    OnlineNameSpace.to(message.RoomData.room).emit("checkAnswers", message);
   });
   socket.on("setWinnerOnline", (data) => {
     OnlineNameSpace.to(data.room).emit("setWinnerOnline", data);
