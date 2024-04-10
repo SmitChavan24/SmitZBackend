@@ -44,11 +44,13 @@ io.on("connection", (socket) => {
     message.socketid = socket.id;
 
     io.to(message.room).emit("userjoined", message);
+    setTimeout(() => {
+      io.to(message.room).emit("timeout", "timeup");
+    }, 300000);
   });
 
   socket.on("chat", (message, cb) => {
-    message.socketid = socket.id;
-
+    console.log(message, "chta");
     io.to(message.room).emit("chat", message);
   });
 
