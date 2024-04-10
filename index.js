@@ -46,6 +46,12 @@ io.on("connection", (socket) => {
     io.to(message.room).emit("userjoined", message);
   });
 
+  socket.on("chat", (message, cb) => {
+    message.socketid = socket.id;
+
+    io.to(message.room).emit("chat", message);
+  });
+
   socket.on("sendChoiceSps", (message, cb) => {
     message.socketid = socket.id;
     console.log(message, "senChoiceSps");
@@ -76,10 +82,6 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("checkAnswersF", (message) => {
-    io.to(message.userdata.room).emit("checkAnswersF", message);
-  });
-
   socket.on("setSecondCurrentPlayer", (data) => {
     if (data[1].socketid) {
       let socket = data[1].socketid;
@@ -97,12 +99,6 @@ io.on("connection", (socket) => {
       socket.join(Room);
       io.to(Room).emit("userjoined", data);
     }
-  });
-
-  socket.on("leaveroom", (room, cb) => {
-    console.log("leaveroom", room, socket.id);
-    socket.leave(room);
-    socket.to(room).emit("user_left", socket.id);
   });
 
   socket.on("leaveAll", (room) => {
@@ -207,7 +203,7 @@ OnlineNameSpace.on("connection", (socket) => {
   });
 
   socket.on("sendmoveOnline", (data) => {
-    console.log(data.players.socketid);
+    // console.log(data.players.socketid);
     let socket = data.players.socketid;
     OnlineNameSpace.to(socket).emit("sendmoveOnline", data);
   });
